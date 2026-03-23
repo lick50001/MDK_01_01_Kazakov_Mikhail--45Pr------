@@ -27,7 +27,60 @@ namespace API_Kazakov.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message + " | " + ex.InnerException?.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}")] 
+        [ProducesResponseType(typeof(Task), 200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public ActionResult GetTaskById(int id)
+        {
+            try
+            {
+                using (var db = new TaskContext())
+                {
+                    var task = db.Tasks.FirstOrDefault(t => t.Id == id);
+
+                    if (task == null)
+                    {
+                        return NotFound(new { message = $"Задача с Id={id} не найдена" });
+                    }
+
+                    return Ok(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("search")] 
+        [ProducesResponseType(typeof(List<Task>), 200)]
+        [ProducesResponseType(500)]
+        public ActionResult SearchTasks([FromQuery] string search) 
+        {
+            try
+            {
+                using (var db = new TaskContext())
+                {
+                    if (string.IsNullOrEmpty(search))
+                    {
+                        return Ok(db.Tasks.ToList());
+                    }
+
+                    var foundTasks = db.Tasks
+                        .Where(t => t.Name.ToLower().Contains(search.ToLower()))
+                        .ToList();
+
+                    return Ok(foundTasks);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
@@ -45,9 +98,9 @@ namespace API_Kazakov.Controllers
                     return Ok(task);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500);
             }
         }
     }
