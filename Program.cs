@@ -1,24 +1,34 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using System;
+using System.IO;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. РЕГИСТРАЦИЯ СЕРВИСОВ (builder.Services) ---
+// Регистрация сервисов
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
-    option.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    option.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
         Title = "Пробник"
     });
+
+    // Включаем XML-комментарии (опционально)
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath)) option.IncludeXmlComments(xmlPath);
 });
 
-// Собираем приложение (этот вызов должен быть ОДИН раз)
 var app = builder.Build();
 
-// --- 2. НАСТРОЙКА КОНФИГУРАЦИИ (app.Use...) ---
-
-// Swagger должен быть в начале, чтобы он работал
+// Настройка middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -35,13 +45,10 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 app.UseAuthorization();
 
-// Настройка путей для контроллеров и страниц
 app.MapControllers();
 app.MapRazorPages();
 
-// Запуск приложения (этот вызов должен быть ОДИН раз в самом конце)
 app.Run();
