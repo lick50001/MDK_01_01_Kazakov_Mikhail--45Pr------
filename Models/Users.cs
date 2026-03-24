@@ -3,6 +3,9 @@
     public class Users
     {
         public int Id { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string Login { get; set; }
         public string Password { get; set; }
     }

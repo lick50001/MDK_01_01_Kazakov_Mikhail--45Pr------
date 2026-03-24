@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using API_Kazakov.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_Kazakov.Contexts
 {
     public class UsersContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
+        public DbSet<Users> Users { get; set; }
 
         public UsersContext()
         {
