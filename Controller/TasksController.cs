@@ -9,6 +9,7 @@ using Task = API_Kazakov.Models.Task;
 namespace API_Kazakov.Controllers
 {
     [Route("api/[controller]")]
+    [ApiExplorerSettings(GroupName = "v1")]
     [ApiController]
     public class TasksController : ControllerBase
     {
