@@ -12,18 +12,25 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(option =>
+builder.Services.AddSwaggerGen(c =>
 {
-    option.SwaggerDoc("v1", new OpenApiInfo
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "Пробник"
+        Title = "Руководство для использования запросов",
+        Description = "Полное руководство для использования запросов находящихся в проекте"
     });
 
-    // Включаем XML-комментарии (опционально)
+    c.SwaggerDoc("v2", new OpenApiInfo
+    {
+        Version = "v2",
+        Title = "Руководство для использования запросов",
+        Description = "Полное руководство для использования запросов находящихся в проекте"
+    });
+
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath)) option.IncludeXmlComments(xmlPath);
+    if (File.Exists(xmlPath)) c.IncludeXmlComments(xmlPath);
 });
 
 var app = builder.Build();
@@ -34,7 +41,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Пробник");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Запросы GET");
+        c.SwaggerEndpoint("/swagger/v2/swagger.json", "Запросы POST");
     });
 }
 else
