@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using API_Kazakov.Contexts;
 using API_Kazakov.Models;
+using BCrypt;
 
 namespace API_Kazakov.Controller
 {
@@ -24,6 +25,7 @@ namespace API_Kazakov.Controller
         [HttpPost]
         [ProducesResponseType(typeof(Users), 200)]
         [ProducesResponseType(403)]
+        [ProducesResponseType(401)]
         [ProducesResponseType(500)]
 
         public ActionResult SignIn([FromForm] string Login, [FromForm] string Password)
@@ -33,10 +35,24 @@ namespace API_Kazakov.Controller
 
             try
             {
-                Users User = new UsersContext().Users.Where(x => x.Login == Login &&
-                x.Password == Password).First();
+                using (var db = new UsersContext())
+                {
+                    var user = db.Users.FirstOrDefault(x => x.Login == Login);
 
-                return Ok(User);
+                    if (user == null)
+                    {
+                        return StatusCode(401);
+                    }
+
+                    bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(Password, user.Password);
+
+                    if (!isPasswordCorrect)
+                    {
+                        return StatusCode(401);
+                    }
+
+                    return Ok(user);
+                }
             }
             catch (Exception exp)
             {
@@ -62,7 +78,7 @@ namespace API_Kazakov.Controller
                     var newUser = new Users
                     {
                         Login = Login,
-                        Password = Password,
+                        Password = BCrypt.Net.BCrypt.HashPassword(Password),
                     };
                     db.Add(newUser);
                     db.SaveChanges();
