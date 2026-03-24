@@ -43,5 +43,37 @@ namespace API_Kazakov.Controller
                 return StatusCode(500);
             }
         }
+
+        [HttpPost("RegIn")]
+        public ActionResult RegIn([FromForm] string Login, [FromForm] string Password)
+        {
+            if (Login == null || Password == null)
+                return StatusCode(403);
+
+            try
+            {
+                using (var db = new UsersContext())
+                {
+                    if (db.Users.Any(u => u.Login == Login))
+                    {
+                        return BadRequest("Пользователь с таким логином уже существует");
+                    }
+
+                    var newUser = new Users
+                    {
+                        Login = Login,
+                        Password = Password,
+                    };
+                    db.Add(newUser);
+                    db.SaveChanges();
+
+                    return Ok(newUser);
+                }
+            }
+            catch (Exception exp)
+            {
+                return StatusCode(500);
+            }
+        }
     } 
 }
