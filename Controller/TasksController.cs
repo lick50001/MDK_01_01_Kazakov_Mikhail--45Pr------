@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using API_Kazakov.Contexts;
+using API_Kazakov.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using API_Kazakov.Contexts;
-using API_Kazakov.Models;
 using Task = API_Kazakov.Models.Task;
 
 namespace API_Kazakov.Controllers
@@ -132,40 +133,71 @@ namespace API_Kazakov.Controllers
         }
 
         /// <summary>
-        /// Метод изменения задачи
+        /// Удаление одной задачи по её ID
         /// </summary>
-        /// <param name="task">Новые данные задачи</param>
-        [HttpPut("Update")]
-        [ApiExplorerSettings(GroupName = "v3")]
+        [HttpDelete("Delete")]
+        [ApiExplorerSettings(GroupName = "v4")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public ActionResult Update([FromForm] Task task)
+        public ActionResult Delete(int id)
         {
             try
             {
                 using (var db = new TaskContext())
                 {
-                    var existingTask = db.Tasks.FirstOrDefault(x => x.Id == task.Id);
+                    var task = db.Tasks.FirstOrDefault(x => x.Id == id);
 
-                    if (existingTask == null)
+                    if (task == null)
                     {
-                        return NotFound(new { message = $"Задача с Id={task.Id} не найдена для обновления" });
+                        return NotFound(new { message = $"Задача с Id={id} не найдена" });
                     }
 
-                    existingTask.Name = task.Name;
-                    existingTask.Property = task.Property;
-                    existingTask.DataExcute = task.DataExcute;
-                    existingTask.Done = task.Done;
-
+                    db.Tasks.Remove(task);
                     db.SaveChanges();
 
-                    return Ok(new { message = "Задача успешно обновлена" });
+                    return Ok(new { message = "Задача успешно удалена" });
                 }
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Полная очистка таблицы (Удалить всё)
+        /// </summary>
+        [HttpDelete("ClearAll")]
+        [ApiExplorerSettings(GroupName = "v4")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
+        public ActionResult ClearAll()
+        {
+            try
+            {
+                using (var db = new TaskContext())
+                {
+                    db.Database.ExecuteSqlRaw("TRUNCATE TABLE Tasks");
+
+                    return Ok(new { message = "Все задачи удалены, список пуст" });
+                }
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    using (var db = new TaskContext())
+                    {
+                        db.Tasks.RemoveRange(db.Tasks);
+                        db.SaveChanges();
+                        return Ok(new { message = "Таблица очищена" });
+                    }
+                }
+                catch
+                {
+                    return StatusCode(500, new { error = ex.Message });
+                }
             }
         }
     }
