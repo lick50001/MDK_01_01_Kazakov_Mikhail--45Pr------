@@ -104,5 +104,31 @@ namespace API_Kazakov.Controllers
                 return StatusCode(500);
             }
         }
+
+        /// <summary>
+        /// Метод добавления задачи
+        /// </summary>
+        /// <param name="task">Данные о задачи</param>
+        /// <returns>Статус выполнения запроса</returns>
+        /// <remarks>Данный метод добавляет задачу в базу данных</remarks>
+        [HttpPut("Add")]
+        [ApiExplorerSettings(GroupName = "v3")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
+        
+        public ActionResult Add([FromForm]Task task)
+        {
+            try
+            {
+                TaskContext taskContext = new TaskContext();
+                taskContext.Tasks.Add(task);
+                taskContext.SaveChanges();
+                return StatusCode(200);
+            }
+            catch (Exception exp)
+            {
+                return StatusCode(500);
+            }
+        }
     }
 }
