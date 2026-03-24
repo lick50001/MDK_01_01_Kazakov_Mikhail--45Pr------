@@ -130,5 +130,43 @@ namespace API_Kazakov.Controllers
                 return StatusCode(500);
             }
         }
+
+        /// <summary>
+        /// Метод изменения задачи
+        /// </summary>
+        /// <param name="task">Новые данные задачи</param>
+        [HttpPut("Update")]
+        [ApiExplorerSettings(GroupName = "v3")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public ActionResult Update([FromForm] Task task)
+        {
+            try
+            {
+                using (var db = new TaskContext())
+                {
+                    var existingTask = db.Tasks.FirstOrDefault(x => x.Id == task.Id);
+
+                    if (existingTask == null)
+                    {
+                        return NotFound(new { message = $"Задача с Id={task.Id} не найдена для обновления" });
+                    }
+
+                    existingTask.Name = task.Name;
+                    existingTask.Property = task.Property;
+                    existingTask.DataExcute = task.DataExcute;
+                    existingTask.Done = task.Done;
+
+                    db.SaveChanges();
+
+                    return Ok(new { message = "Задача успешно обновлена" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 }
